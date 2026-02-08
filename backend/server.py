@@ -669,6 +669,337 @@ async def submit_contact(contact: ContactRequest):
     
     return {"message": "Thank you for contacting us. We'll be in touch soon!", "contact_id": contact_doc["contact_id"]}
 
+# ==================== ADMIN ROUTES ====================
+
+# Admin credentials - can be stored in env or database
+ADMIN_CREDENTIALS = {
+    "sajeev@getupsolutions.com.au": {
+        "password_hash": hash_password("Getup@4665"),
+        "name": "Sajeev Admin",
+        "admin_id": "admin_sajeev001"
+    }
+}
+
+async def get_current_admin(request: Request):
+    """Verify admin authentication"""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Admin authentication required")
+    
+    token = auth_header.split(" ")[1]
+    
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        admin_id = payload.get("user_id")
+        # Check in admins collection first
+        admin_doc = await db.admins.find_one({"admin_id": admin_id}, {"_id": 0})
+        if admin_doc:
+            if isinstance(admin_doc.get('created_at'), str):
+                admin_doc['created_at'] = datetime.fromisoformat(admin_doc['created_at'])
+            return AdminUser(**admin_doc)
+        
+        # Check if it's a user with admin role
+        user_doc = await db.users.find_one({"user_id": admin_id, "role": "admin"}, {"_id": 0})
+        if user_doc:
+            if isinstance(user_doc.get('created_at'), str):
+                user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
+            return AdminUser(
+                admin_id=user_doc["user_id"],
+                email=user_doc["email"],
+                name=user_doc["name"],
+                role="admin",
+                created_at=user_doc["created_at"]
+            )
+        
+        raise HTTPException(status_code=401, detail="Admin not found")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@api_router.post("/admin/login", response_model=AdminTokenResponse)
+async def admin_login(credentials: AdminLogin):
+    """Admin login endpoint"""
+    email = credentials.email.lower()
+    
+    # Check hardcoded admin credentials first
+    if email in ADMIN_CREDENTIALS:
+        admin_data = ADMIN_CREDENTIALS[email]
+        if verify_password(credentials.password, admin_data["password_hash"]):
+            # Create or update admin in database
+            admin_doc = await db.admins.find_one({"email": email}, {"_id": 0})
+            if not admin_doc:
+                admin_doc = {
+                    "admin_id": admin_data["admin_id"],
+                    "email": email,
+                    "name": admin_data["name"],
+                    "role": "admin",
+                    "created_at": datetime.now(timezone.utc).isoformat()
+                }
+                await db.admins.insert_one(admin_doc)
+            
+            token = create_jwt_token(admin_data["admin_id"], email, "admin")
+            
+            if isinstance(admin_doc.get('created_at'), str):
+                admin_doc['created_at'] = datetime.fromisoformat(admin_doc['created_at'])
+            
+            return AdminTokenResponse(
+                access_token=token,
+                admin=AdminUser(**admin_doc)
+            )
+    
+    # Check users with admin role
+    user_doc = await db.users.find_one({"email": email, "role": "admin"}, {"_id": 0})
+    if user_doc and verify_password(credentials.password, user_doc.get("password_hash", "")):
+        token = create_jwt_token(user_doc["user_id"], email, "admin")
+        
+        if isinstance(user_doc.get('created_at'), str):
+            user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
+        
+        return AdminTokenResponse(
+            access_token=token,
+            admin=AdminUser(
+                admin_id=user_doc["user_id"],
+                email=user_doc["email"],
+                name=user_doc["name"],
+                role="admin",
+                created_at=user_doc["created_at"]
+            )
+        )
+    
+    raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+@api_router.get("/admin/me")
+async def get_admin_me(admin: AdminUser = Depends(get_current_admin)):
+    """Get current admin info"""
+    return admin
+
+@api_router.get("/admin/dashboard/stats")
+async def get_admin_stats(admin: AdminUser = Depends(get_current_admin)):
+    """Get dashboard statistics"""
+    # Count users
+    total_users = await db.users.count_documents({})
+    active_subscriptions = await db.subscriptions.count_documents({"status": "active"})
+    new_contacts = await db.contacts.count_documents({"status": "new"})
+    total_contacts = await db.contacts.count_documents({})
+    
+    # Calculate revenue
+    pipeline = [
+        {"$match": {"status": "completed"}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    revenue_result = await db.payment_transactions.aggregate(pipeline).to_list(1)
+    total_revenue = revenue_result[0]["total"] if revenue_result else 0
+    
+    # Monthly revenue
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    monthly_pipeline = [
+        {"$match": {"status": "completed", "created_at": {"$gte": thirty_days_ago}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    monthly_result = await db.payment_transactions.aggregate(monthly_pipeline).to_list(1)
+    monthly_revenue = monthly_result[0]["total"] if monthly_result else 0
+    
+    # Subscription breakdown
+    sub_pipeline = [
+        {"$match": {"status": "active"}},
+        {"$group": {"_id": "$plan_type", "count": {"$sum": 1}}}
+    ]
+    sub_breakdown = await db.subscriptions.aggregate(sub_pipeline).to_list(10)
+    subscription_by_type = {item["_id"]: item["count"] for item in sub_breakdown}
+    
+    return {
+        "total_users": total_users,
+        "active_subscriptions": active_subscriptions,
+        "new_contacts": new_contacts,
+        "total_contacts": total_contacts,
+        "total_revenue": total_revenue,
+        "monthly_revenue": monthly_revenue,
+        "subscription_by_type": subscription_by_type
+    }
+
+@api_router.get("/admin/users")
+async def get_all_users(
+    skip: int = 0, 
+    limit: int = 50,
+    search: Optional[str] = None,
+    admin: AdminUser = Depends(get_current_admin)
+):
+    """Get all users with pagination and search"""
+    query = {}
+    if search:
+        query = {
+            "$or": [
+                {"email": {"$regex": search, "$options": "i"}},
+                {"name": {"$regex": search, "$options": "i"}},
+                {"business_name": {"$regex": search, "$options": "i"}}
+            ]
+        }
+    
+    users = await db.users.find(query, {"_id": 0, "password_hash": 0}).skip(skip).limit(limit).to_list(limit)
+    total = await db.users.count_documents(query)
+    
+    return {"users": users, "total": total, "skip": skip, "limit": limit}
+
+@api_router.get("/admin/users/{user_id}")
+async def get_user_detail(user_id: str, admin: AdminUser = Depends(get_current_admin)):
+    """Get user details including subscription"""
+    user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    subscription = await db.subscriptions.find_one(
+        {"user_id": user_id, "status": "active"}, 
+        {"_id": 0}
+    )
+    
+    transactions = await db.payment_transactions.find(
+        {"user_id": user_id}, 
+        {"_id": 0}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    return {
+        "user": user,
+        "subscription": subscription,
+        "transactions": transactions
+    }
+
+@api_router.put("/admin/users/{user_id}")
+async def update_user(user_id: str, update: UserUpdate, admin: AdminUser = Depends(get_current_admin)):
+    """Update user details"""
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No update data provided")
+    
+    result = await db.users.update_one({"user_id": user_id}, {"$set": update_data})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "User updated successfully"}
+
+@api_router.delete("/admin/users/{user_id}")
+async def delete_user(user_id: str, admin: AdminUser = Depends(get_current_admin)):
+    """Delete a user"""
+    result = await db.users.delete_one({"user_id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Also delete related data
+    await db.subscriptions.delete_many({"user_id": user_id})
+    await db.user_sessions.delete_many({"user_id": user_id})
+    await db.ai_chats.delete_many({"user_id": user_id})
+    
+    return {"message": "User deleted successfully"}
+
+@api_router.get("/admin/subscriptions")
+async def get_all_subscriptions(
+    skip: int = 0,
+    limit: int = 50,
+    status: Optional[str] = None,
+    admin: AdminUser = Depends(get_current_admin)
+):
+    """Get all subscriptions"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    subscriptions = await db.subscriptions.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
+    total = await db.subscriptions.count_documents(query)
+    
+    # Enrich with user info
+    for sub in subscriptions:
+        user = await db.users.find_one({"user_id": sub["user_id"]}, {"_id": 0, "name": 1, "email": 1})
+        sub["user_name"] = user["name"] if user else "Unknown"
+        sub["user_email"] = user["email"] if user else "Unknown"
+    
+    return {"subscriptions": subscriptions, "total": total}
+
+@api_router.put("/admin/subscriptions/{subscription_id}")
+async def update_subscription(subscription_id: str, status: str, admin: AdminUser = Depends(get_current_admin)):
+    """Update subscription status"""
+    result = await db.subscriptions.update_one(
+        {"subscription_id": subscription_id},
+        {"$set": {"status": status}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    return {"message": "Subscription updated"}
+
+@api_router.get("/admin/contacts")
+async def get_all_contacts(
+    skip: int = 0,
+    limit: int = 50,
+    status: Optional[str] = None,
+    admin: AdminUser = Depends(get_current_admin)
+):
+    """Get all contact inquiries"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    contacts = await db.contacts.find(query, {"_id": 0}).skip(skip).limit(limit).sort("created_at", -1).to_list(limit)
+    total = await db.contacts.count_documents(query)
+    
+    return {"contacts": contacts, "total": total}
+
+@api_router.put("/admin/contacts/{contact_id}")
+async def update_contact(contact_id: str, update: ContactUpdate, admin: AdminUser = Depends(get_current_admin)):
+    """Update contact status"""
+    result = await db.contacts.update_one(
+        {"contact_id": contact_id},
+        {"$set": {"status": update.status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    return {"message": "Contact updated"}
+
+@api_router.delete("/admin/contacts/{contact_id}")
+async def delete_contact(contact_id: str, admin: AdminUser = Depends(get_current_admin)):
+    """Delete a contact inquiry"""
+    result = await db.contacts.delete_one({"contact_id": contact_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    return {"message": "Contact deleted"}
+
+@api_router.get("/admin/transactions")
+async def get_all_transactions(
+    skip: int = 0,
+    limit: int = 50,
+    status: Optional[str] = None,
+    admin: AdminUser = Depends(get_current_admin)
+):
+    """Get all payment transactions"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    transactions = await db.payment_transactions.find(query, {"_id": 0}).skip(skip).limit(limit).sort("created_at", -1).to_list(limit)
+    total = await db.payment_transactions.count_documents(query)
+    
+    return {"transactions": transactions, "total": total}
+
+@api_router.get("/admin/revenue/chart")
+async def get_revenue_chart(days: int = 30, admin: AdminUser = Depends(get_current_admin)):
+    """Get revenue data for chart"""
+    start_date = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    
+    pipeline = [
+        {"$match": {"status": "completed", "created_at": {"$gte": start_date}}},
+        {"$addFields": {"date": {"$substr": ["$created_at", 0, 10]}}},
+        {"$group": {"_id": "$date", "revenue": {"$sum": "$amount"}, "count": {"$sum": 1}}},
+        {"$sort": {"_id": 1}}
+    ]
+    
+    results = await db.payment_transactions.aggregate(pipeline).to_list(days)
+    
+    return {"data": results, "period_days": days}
+
 # ==================== GENERAL ROUTES ====================
 
 @api_router.get("/")
