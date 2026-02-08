@@ -227,6 +227,196 @@ def create_jwt_token(user_id: str, email: str, role: str = "user") -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+# ==================== EMAIL HELPERS ====================
+
+async def send_admin_notification(subject: str, html_content: str):
+    """Send email notification to admin"""
+    if not RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured, skipping email")
+        return None
+    
+    try:
+        params = {
+            "from": SENDER_EMAIL,
+            "to": [ADMIN_EMAIL],
+            "subject": f"[FINMAR Admin] {subject}",
+            "html": html_content
+        }
+        result = await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Admin notification sent: {subject}")
+        return result
+    except Exception as e:
+        logger.error(f"Failed to send admin notification: {str(e)}")
+        return None
+
+def get_email_template(title: str, content: str) -> str:
+    """Generate HTML email template"""
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+            <tr>
+                <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background-color: #0f172a; padding: 30px; text-align: center;">
+                                <h1 style="margin: 0; color: #f59e0b; font-size: 28px; font-weight: bold;">FINMAR</h1>
+                                <p style="margin: 5px 0 0; color: #94a3b8; font-size: 14px;">Admin Notification</p>
+                            </td>
+                        </tr>
+                        <!-- Content -->
+                        <tr>
+                            <td style="padding: 40px 30px;">
+                                <h2 style="margin: 0 0 20px; color: #0f172a; font-size: 22px;">{title}</h2>
+                                {content}
+                            </td>
+                        </tr>
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #f1f5f9; padding: 20px 30px; text-align: center;">
+                                <p style="margin: 0; color: #64748b; font-size: 12px;">
+                                    This is an automated notification from FINMAR Admin System.<br>
+                                    © 2026 FINMAR. All rights reserved.
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+
+async def notify_new_user(user_name: str, user_email: str, business_name: str = None):
+    """Send notification for new user registration"""
+    content = f"""
+    <p style="color: #475569; line-height: 1.6;">A new user has registered on FINMAR:</p>
+    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px;">
+                <strong style="color: #0f172a;">Name:</strong>
+                <span style="color: #475569; margin-left: 10px;">{user_name}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px; margin-top: 8px;">
+                <strong style="color: #0f172a;">Email:</strong>
+                <span style="color: #475569; margin-left: 10px;">{user_email}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px; margin-top: 8px;">
+                <strong style="color: #0f172a;">Business:</strong>
+                <span style="color: #475569; margin-left: 10px;">{business_name or 'Not provided'}</span>
+            </td>
+        </tr>
+    </table>
+    <p style="color: #475569; line-height: 1.6;">
+        <a href="https://finmar.com.au/admin/users" style="color: #f59e0b; text-decoration: none;">View in Admin Portal →</a>
+    </p>
+    """
+    html = get_email_template("New User Registration", content)
+    await send_admin_notification("New User Registration", html)
+
+async def notify_new_subscription(user_name: str, user_email: str, plan_type: str, plan_tier: str, amount: float):
+    """Send notification for new subscription purchase"""
+    content = f"""
+    <p style="color: #475569; line-height: 1.6;">A new subscription has been purchased:</p>
+    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px;">
+                <strong style="color: #0f172a;">Customer:</strong>
+                <span style="color: #475569; margin-left: 10px;">{user_name} ({user_email})</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px;">
+                <strong style="color: #0f172a;">Plan:</strong>
+                <span style="color: #475569; margin-left: 10px;">{plan_type.title()} - {plan_tier.title()}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; background-color: #10b981; border-radius: 8px;">
+                <strong style="color: #ffffff;">Amount:</strong>
+                <span style="color: #ffffff; margin-left: 10px; font-size: 18px;">${amount:.2f} AUD/month</span>
+            </td>
+        </tr>
+    </table>
+    <p style="color: #475569; line-height: 1.6;">
+        <a href="https://finmar.com.au/admin/subscriptions" style="color: #f59e0b; text-decoration: none;">View in Admin Portal →</a>
+    </p>
+    """
+    html = get_email_template("New Subscription Purchase 💰", content)
+    await send_admin_notification("New Subscription Purchase", html)
+
+async def notify_subscription_cancelled(user_name: str, user_email: str, plan_type: str, plan_tier: str):
+    """Send notification for subscription cancellation"""
+    content = f"""
+    <p style="color: #475569; line-height: 1.6;">A subscription has been cancelled:</p>
+    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px;">
+                <strong style="color: #0f172a;">Customer:</strong>
+                <span style="color: #475569; margin-left: 10px;">{user_name} ({user_email})</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; background-color: #fef2f2; border-radius: 8px;">
+                <strong style="color: #dc2626;">Cancelled Plan:</strong>
+                <span style="color: #dc2626; margin-left: 10px;">{plan_type.title()} - {plan_tier.title()}</span>
+            </td>
+        </tr>
+    </table>
+    <p style="color: #475569; line-height: 1.6;">Consider reaching out to understand why they cancelled.</p>
+    <p style="color: #475569; line-height: 1.6;">
+        <a href="https://finmar.com.au/admin/subscriptions" style="color: #f59e0b; text-decoration: none;">View in Admin Portal →</a>
+    </p>
+    """
+    html = get_email_template("Subscription Cancelled ⚠️", content)
+    await send_admin_notification("Subscription Cancelled", html)
+
+async def notify_new_contact(name: str, email: str, service: str, message: str, business: str = None):
+    """Send notification for new contact inquiry"""
+    content = f"""
+    <p style="color: #475569; line-height: 1.6;">A new contact inquiry has been submitted:</p>
+    <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px;">
+                <strong style="color: #0f172a;">From:</strong>
+                <span style="color: #475569; margin-left: 10px;">{name} ({email})</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px;">
+                <strong style="color: #0f172a;">Business:</strong>
+                <span style="color: #475569; margin-left: 10px;">{business or 'Not provided'}</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; background-color: #fef3c7; border-radius: 8px;">
+                <strong style="color: #92400e;">Service Interest:</strong>
+                <span style="color: #92400e; margin-left: 10px;">{service.title()}</span>
+            </td>
+        </tr>
+    </table>
+    <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <strong style="color: #0f172a;">Message:</strong>
+        <p style="color: #475569; margin: 10px 0 0; line-height: 1.6;">{message}</p>
+    </div>
+    <p style="color: #475569; line-height: 1.6;">
+        <a href="https://finmar.com.au/admin/contacts" style="color: #f59e0b; text-decoration: none;">Respond in Admin Portal →</a>
+    </p>
+    """
+    html = get_email_template("New Contact Inquiry 📩", content)
+    await send_admin_notification("New Contact Inquiry", html)
+
 async def get_current_user(request: Request) -> User:
     # Try cookie first
     session_token = request.cookies.get("session_token")
