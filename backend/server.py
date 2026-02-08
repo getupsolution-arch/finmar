@@ -103,11 +103,40 @@ class User(BaseModel):
     created_at: datetime
     subscription_status: Optional[str] = "inactive"
     current_plan: Optional[str] = None
+    role: Optional[str] = "user"  # user or admin
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: User
+
+# Admin Models
+class AdminLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class AdminUser(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    admin_id: str
+    email: str
+    name: str
+    role: str = "admin"
+    created_at: datetime
+
+class AdminTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    admin: AdminUser
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    business_name: Optional[str] = None
+    phone: Optional[str] = None
+    subscription_status: Optional[str] = None
+    role: Optional[str] = None
+
+class ContactUpdate(BaseModel):
+    status: str  # new, in_progress, resolved, closed
 
 class Subscription(BaseModel):
     model_config = ConfigDict(extra="ignore")
