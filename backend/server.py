@@ -886,6 +886,12 @@ async def submit_contact(contact: ContactRequest):
     
     await db.contacts.insert_one(contact_doc)
     
+    # Send admin notification (non-blocking)
+    asyncio.create_task(notify_new_contact(
+        contact.name, contact.email, contact.service_interest, 
+        contact.message, contact.business_name
+    ))
+    
     return {"message": "Thank you for contacting us. We'll be in touch soon!", "contact_id": contact_doc["contact_id"]}
 
 # ==================== ADMIN ROUTES ====================
