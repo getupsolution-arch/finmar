@@ -100,6 +100,10 @@ const Navbar = () => {
                                         <LayoutDashboard className="w-4 h-4 mr-2" />
                                         Dashboard
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => navigate('/profile')} data-testid="nav-profile">
+                                        <User className="w-4 h-4 mr-2" />
+                                        Profile
+                                    </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={handleLogout} data-testid="nav-logout">
                                         <LogOut className="w-4 h-4 mr-2" />
