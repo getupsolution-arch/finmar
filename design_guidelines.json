@@ -1,0 +1,163 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "FINMAR",
+      "aesthetic": "Australian Modern Professional",
+      "core_values": ["Trust", "Growth", "Clarity", "Automation"],
+      "tone": "Confident, Efficient, Approachable, Tech-Forward"
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Outfit, sans-serif",
+        "body": "Plus Jakarta Sans, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "weights": {
+        "light": 300,
+        "regular": 400,
+        "medium": 500,
+        "bold": 700,
+        "black": 900
+      },
+      "scale": {
+        "h1": "text-5xl md:text-7xl tracking-tight font-bold",
+        "h2": "text-4xl md:text-5xl tracking-tight font-semibold",
+        "h3": "text-2xl md:text-3xl tracking-normal font-medium",
+        "body_lg": "text-lg md:text-xl leading-relaxed",
+        "body_base": "text-base leading-relaxed text-slate-600 dark:text-slate-300",
+        "caption": "text-sm text-slate-500 uppercase tracking-widest"
+      },
+      "imports": [
+        "@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');"
+      ]
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "DEFAULT": "#0F172A",
+          "foreground": "#F8FAFC",
+          "description": "Deep Ocean Navy - Trust & Authority"
+        },
+        "secondary": {
+          "DEFAULT": "#F59E0B",
+          "foreground": "#0F172A",
+          "description": "Wattle Gold - Growth & Energy (Australian Touch)"
+        },
+        "accent": {
+          "DEFAULT": "#F43F5E",
+          "foreground": "#FFFFFF",
+          "description": "Coral Red - Marketing & Urgency"
+        },
+        "background": {
+          "light": "#F8FAFC",
+          "dark": "#020617",
+          "paper": "#FFFFFF"
+        },
+        "surface": {
+          "light": "#FFFFFF",
+          "dark": "#1E293B"
+        },
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "info": "#3B82F6"
+      },
+      "gradients": {
+        "hero": "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900",
+        "ai_glow": "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500",
+        "card_hover": "hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-300"
+      }
+    },
+    "spacing": {
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      "section_padding": "py-20 md:py-32",
+      "card_padding": "p-8 md:p-10",
+      "grid_gap": "gap-8 md:gap-12"
+    },
+    "layout": {
+      "grid_system": {
+        "marketing": "grid grid-cols-1 md:grid-cols-12 gap-8",
+        "dashboard": "grid grid-cols-1 md:grid-cols-4 gap-6",
+        "features": "grid grid-cols-1 md:grid-cols-3 gap-8"
+      },
+      "border_radius": {
+        "card": "rounded-2xl",
+        "button": "rounded-full",
+        "input": "rounded-lg"
+      },
+      "shadows": {
+        "card": "shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-shadow duration-300",
+        "dropdown": "shadow-xl border border-slate-100 dark:border-slate-800"
+      }
+    },
+    "components": {
+      "buttons": {
+        "primary": "bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-full font-medium transition-all active:scale-95",
+        "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/90 h-12 px-8 rounded-full font-medium transition-all active:scale-95",
+        "outline": "border-2 border-slate-200 hover:border-slate-900 text-slate-900 h-12 px-8 rounded-full font-medium transition-all bg-transparent"
+      },
+      "cards": {
+        "feature": "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 rounded-2xl hover:border-slate-300 dark:hover:border-slate-700 transition-colors group",
+        "pricing": "flex flex-col p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl relative overflow-hidden"
+      },
+      "inputs": {
+        "default": "h-12 bg-slate-50 border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary rounded-lg px-4 transition-all"
+      }
+    },
+    "assets": {
+      "images": {
+        "hero_bg": "https://images.unsplash.com/photo-1748050869869-0efaf9599d83?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjB0ZWFtJTIwY29sbGFib3JhdGlvbiUyMGF1c3RyYWxpYW58ZW58MHx8fHwxNzcwNTM1OTI1fDA&ixlib=rb-4.1.0&q=85",
+        "ai_dashboard_preview": "https://images.unsplash.com/photo-1634117622592-114e3024ff27?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMGZpbmFuY2lhbCUyMGdyb3d0aCUyMGdyYXBoJTIwM2R8ZW58MHx8fHwxNzcwNTM1OTMwfDA&ixlib=rb-4.1.0&q=85",
+        "team_meeting": "https://images.unsplash.com/photo-1748050869375-a38a7bd50735?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBvZmZpY2UlMjB0ZWFtJTIwY29sbGFib3JhdGlvbiUyMGF1c3RyYWxpYW58ZW58MHx8fHwxNzcwNTM1OTI1fDA&ixlib=rb-4.1.0&q=85",
+        "office_detail": "https://images.unsplash.com/photo-1748050868733-f5db24b7e154?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBvZmZpY2UlMjB0ZWFtJTIwY29sbGFib3JhdGlvbiUyMGF1c3RyYWxpYW58ZW58MHx8fHwxNzcwNTM1OTI1fDA&ixlib=rb-4.1.0&q=85"
+      },
+      "icons": {
+        "library": "lucide-react",
+        "style": "stroke-width={1.5} className='w-6 h-6'"
+      }
+    },
+    "motion": {
+      "libraries": ["framer-motion"],
+      "transitions": {
+        "default": "transition-all duration-300 ease-out",
+        "slow": "transition-all duration-700 ease-in-out"
+      },
+      "animations": {
+        "fade_in_up": {
+          "initial": { "opacity": 0, "y": 20 },
+          "animate": { "opacity": 1, "y": 0 },
+          "transition": { "duration": 0.5 }
+        },
+        "stagger_children": {
+          "animate": { "transition": { "staggerChildren": 0.1 } }
+        }
+      }
+    },
+    "accessibility": {
+      "contrast": "Ensure WCAG AA compliance (4.5:1 for normal text).",
+      "focus_states": "Visible focus rings on all interactive elements.",
+      "aria": "Use aria-labels for icon-only buttons.",
+      "reduced_motion": "Respect prefers-reduced-motion media query."
+    },
+    "universal_guidelines": [
+      "Do not use generic centered layouts. Use asymmetry and grid offsets.",
+      "Use 'Outfit' for all headings and 'Plus Jakarta Sans' for body text.",
+      "Primary color is Deep Navy (#0F172A). Use Wattle Gold (#F59E0B) for CTAs.",
+      "Avoid gradients for text. Use them subtly for backgrounds or borders.",
+      "All interactive elements must have a data-testid attribute.",
+      "Use 'sonner' for toast notifications.",
+      "Use 'lucide-react' for icons.",
+      "Ensure all images have alt text.",
+      "For the AI Dashboard, switch to a 'Dark Mode' aesthetic within the container to differentiate it from the standard accounting tools."
+    ]
+  },
+  "instructions_to_main_agent": {
+    "step_1": "Install dependencies: `npm install framer-motion lucide-react clsx tailwind-merge sonner`",
+    "step_2": "Update `tailwind.config.js` with the custom colors and font families defined in `design_system.typography` and `design_system.colors`.",
+    "step_3": "Update `index.css` to import the Google Fonts.",
+    "step_4": "Create a `Layout` component that wraps the app and handles the Navbar and Footer.",
+    "step_5": "Build the Landing Page using the 'Marketing' grid system and 'Hero' assets.",
+    "step_6": "Build the Dashboard using the 'Dashboard' grid system and 'Cards' components.",
+    "step_7": "Ensure all forms (Login, Register, Contact) use `shadcn/ui` form components but styled with the new design system."
+  }
+}
