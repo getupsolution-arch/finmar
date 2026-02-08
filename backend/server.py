@@ -696,6 +696,124 @@ async def get_my_subscription(current_user: User = Depends(get_current_user)):
         return Subscription(**sub_doc)
     return None
 
+@api_router.get("/subscriptions/history")
+async def get_subscription_history(current_user: User = Depends(get_current_user)):
+    """Get user's subscription history"""
+    subscriptions = await db.subscriptions.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(20)
+    return subscriptions
+
+@api_router.post("/subscriptions/change")
+async def change_subscription(change_data: SubscriptionChange, current_user: User = Depends(get_current_user)):
+    """Upgrade or downgrade subscription - redirects to Stripe checkout"""
+    from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+    
+    # Get current subscription
+    current_sub = await db.subscriptions.find_one(
+        {"user_id": current_user.user_id, "status": "active"},
+        {"_id": 0}
+    )
+    
+    # Calculate new amount
+    amount = 0.0
+    if change_data.plan_type == "accounting":
+        if change_data.plan_tier not in ACCOUNTING_PACKAGES:
+            raise HTTPException(status_code=400, detail="Invalid accounting plan")
+        amount = ACCOUNTING_PACKAGES[change_data.plan_tier]["price"]
+    elif change_data.plan_type == "marketing":
+        if change_data.plan_tier not in MARKETING_PACKAGES:
+            raise HTTPException(status_code=400, detail="Invalid marketing plan")
+        amount = MARKETING_PACKAGES[change_data.plan_tier]["price"]
+    elif change_data.plan_type == "combined":
+        if change_data.plan_tier not in COMBINED_PACKAGES:
+            raise HTTPException(status_code=400, detail="Invalid combined plan")
+        amount = COMBINED_PACKAGES[change_data.plan_tier]["price"]
+    else:
+        raise HTTPException(status_code=400, detail="Invalid plan type")
+    
+    # Determine if upgrade or downgrade
+    change_type = "new"
+    if current_sub:
+        old_amount = current_sub.get("amount", 0)
+        change_type = "upgrade" if amount > old_amount else "downgrade"
+    
+    # Build URLs
+    success_url = f"{change_data.origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{change_data.origin_url}/dashboard"
+    
+    webhook_url = f"{os.environ.get('REACT_APP_BACKEND_URL', change_data.origin_url)}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    checkout_request = CheckoutSessionRequest(
+        amount=float(amount),
+        currency="aud",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "user_id": current_user.user_id,
+            "plan_type": change_data.plan_type,
+            "plan_tier": change_data.plan_tier,
+            "change_type": change_type
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # Create payment transaction record
+    transaction_doc = {
+        "transaction_id": f"txn_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "session_id": session.session_id,
+        "amount": amount,
+        "currency": "AUD",
+        "status": "pending",
+        "payment_status": "initiated",
+        "plan_type": change_data.plan_type,
+        "plan_tier": change_data.plan_tier,
+        "add_ons": [],
+        "metadata": {"stripe_session_id": session.session_id, "change_type": change_type},
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.payment_transactions.insert_one(transaction_doc)
+    
+    return {"checkout_url": session.url, "session_id": session.session_id, "change_type": change_type}
+
+@api_router.post("/subscriptions/cancel")
+async def cancel_subscription(current_user: User = Depends(get_current_user)):
+    """Cancel active subscription"""
+    # Get current subscription
+    current_sub = await db.subscriptions.find_one(
+        {"user_id": current_user.user_id, "status": "active"},
+        {"_id": 0}
+    )
+    
+    if not current_sub:
+        raise HTTPException(status_code=400, detail="No active subscription to cancel")
+    
+    # Update subscription status
+    await db.subscriptions.update_one(
+        {"subscription_id": current_sub["subscription_id"]},
+        {"$set": {"status": "cancelled", "cancelled_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Update user status
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {"subscription_status": "cancelled", "current_plan": None}}
+    )
+    
+    # Send admin notification (non-blocking)
+    asyncio.create_task(notify_subscription_cancelled(
+        current_user.name, current_user.email,
+        current_sub["plan_type"], current_sub["plan_tier"]
+    ))
+    
+    return {"message": "Subscription cancelled successfully"}
+
 # ==================== PAYMENT ROUTES ====================
 
 @api_router.post("/payments/checkout")
