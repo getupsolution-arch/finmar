@@ -1,8 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
 import AuthCallback from './components/AuthCallback';
 
 // Pages
@@ -14,6 +17,14 @@ import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 import DashboardPage from './pages/DashboardPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+
+// Admin Pages
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminSubscriptionsPage from './pages/admin/AdminSubscriptionsPage';
+import AdminContactsPage from './pages/admin/AdminContactsPage';
+import AdminTransactionsPage from './pages/admin/AdminTransactionsPage';
 
 import './App.css';
 
@@ -50,6 +61,20 @@ function AppRouter() {
             {/* Auth routes without layout */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+
+            {/* Admin routes */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin" element={
+                <AdminProtectedRoute>
+                    <AdminLayout />
+                </AdminProtectedRoute>
+            }>
+                <Route path="dashboard" element={<AdminDashboardPage />} />
+                <Route path="users" element={<AdminUsersPage />} />
+                <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+                <Route path="contacts" element={<AdminContactsPage />} />
+                <Route path="transactions" element={<AdminTransactionsPage />} />
+            </Route>
         </Routes>
     );
 }
@@ -58,7 +83,9 @@ function App() {
     return (
         <BrowserRouter>
             <AuthProvider>
-                <AppRouter />
+                <AdminAuthProvider>
+                    <AppRouter />
+                </AdminAuthProvider>
             </AuthProvider>
         </BrowserRouter>
     );
