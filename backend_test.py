@@ -170,7 +170,7 @@ class FinmarAPITester:
         """Test contact form submission"""
         contact_data = {
             "name": "Test Contact",
-            "email": "test.contact@finmar.test",
+            "email": "test.contact@example.com",
             "phone": "+61 400 123 456",
             "business_name": "Test Business",
             "service_interest": "accounting",
