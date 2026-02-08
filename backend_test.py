@@ -502,11 +502,33 @@ class FinmarAPITester:
             self.test_user_login()
             self.test_get_current_user()
             
-            # Authenticated endpoints
+            # Profile management tests
+            print("\n👤 Testing Profile Management")
+            print("-" * 30)
+            self.test_get_profile()
+            self.test_update_profile()
+            self.test_change_password()
+            
+            # Subscription management tests
+            print("\n💳 Testing Subscription Management")
+            print("-" * 30)
             self.test_my_subscription()
+            self.test_subscription_history()
+            self.test_subscription_change()
+            self.test_subscription_cancel()
+            
+            # Other authenticated endpoints
+            print("\n🤖 Testing Other Features")
+            print("-" * 30)
             self.test_ai_insights()
             self.test_ai_chat_history()
             self.test_checkout_creation()
+            
+            # Test with provided credentials
+            print("\n🔑 Testing Provided Credentials")
+            print("-" * 30)
+            self.test_profile_with_test_credentials()
+            
             self.test_logout()
         
         # Admin tests
