@@ -16,6 +16,7 @@ import PricingPage from './pages/PricingPage';
 import ServicesPage from './pages/ServicesPage';
 import ContactPage from './pages/ContactPage';
 import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 
 // Admin Pages
@@ -54,6 +55,11 @@ function AppRouter() {
                 <Route path="/dashboard" element={
                     <ProtectedRoute>
                         <DashboardPage />
+                    </ProtectedRoute>
+                } />
+                <Route path="/profile" element={
+                    <ProtectedRoute>
+                        <ProfilePage />
                     </ProtectedRoute>
                 } />
             </Route>
