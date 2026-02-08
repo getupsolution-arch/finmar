@@ -616,6 +616,55 @@ async def logout(request: Request):
     response.delete_cookie("session_token", path="/")
     return response
 
+# ==================== USER PROFILE ROUTES ====================
+
+@api_router.get("/profile", response_model=User)
+async def get_profile(current_user: User = Depends(get_current_user)):
+    """Get current user profile"""
+    return current_user
+
+@api_router.put("/profile", response_model=User)
+async def update_profile(profile: ProfileUpdate, current_user: User = Depends(get_current_user)):
+    """Update user profile"""
+    update_data = {k: v for k, v in profile.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No update data provided")
+    
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": update_data}
+    )
+    
+    # Get updated user
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0, "password_hash": 0})
+    if isinstance(user_doc.get('created_at'), str):
+        user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
+    
+    return User(**user_doc)
+
+@api_router.post("/profile/change-password")
+async def change_password(data: PasswordChange, current_user: User = Depends(get_current_user)):
+    """Change user password"""
+    # Get user with password hash
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    
+    if not user_doc.get("password_hash"):
+        raise HTTPException(status_code=400, detail="Cannot change password for OAuth users")
+    
+    if not verify_password(data.current_password, user_doc["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+    
+    new_hash = hash_password(data.new_password)
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {"password_hash": new_hash}}
+    )
+    
+    return {"message": "Password changed successfully"}
+
 # ==================== SUBSCRIPTION ROUTES ====================
 
 @api_router.get("/packages/accounting")
