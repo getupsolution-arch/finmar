@@ -280,7 +280,11 @@ class FinmarAPITester:
             self.token = response['access_token']
             
             # Test profile endpoints with test user
-            self.test_get_profile()
+            success, profile_response = self.make_request('GET', '/profile', auth_required=True)
+            if success and profile_response.get('email') == 'profile_test@test.com':
+                self.log_result("Get Profile (Test Credentials)", True, f"Profile retrieved for test user")
+            else:
+                self.log_result("Get Profile (Test Credentials)", False, f"Response: {profile_response}")
             
             # Restore original token
             self.token = original_token
