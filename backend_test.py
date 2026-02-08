@@ -194,6 +194,100 @@ class FinmarAPITester:
         else:
             self.log_result("My Subscription", False, f"Response: {response}")
 
+    # ==================== PROFILE TESTS ====================
+    
+    def test_get_profile(self):
+        """Test GET /api/profile - get user profile data"""
+        success, response = self.make_request('GET', '/profile', auth_required=True)
+        if success and response.get('email') == self.test_email:
+            self.log_result("Get Profile", True, f"Profile retrieved for {response.get('name')}")
+        else:
+            self.log_result("Get Profile", False, f"Response: {response}")
+
+    def test_update_profile(self):
+        """Test PUT /api/profile - update user profile"""
+        profile_data = {
+            "name": "Updated Test User",
+            "business_name": "Updated Business Pty Ltd",
+            "phone": "+61 400 123 456"
+        }
+        
+        success, response = self.make_request('PUT', '/profile', profile_data, auth_required=True)
+        if success and response.get('name') == profile_data['name']:
+            self.log_result("Update Profile", True, f"Profile updated successfully")
+        else:
+            self.log_result("Update Profile", False, f"Response: {response}")
+
+    def test_change_password(self):
+        """Test POST /api/profile/change-password - change user password"""
+        password_data = {
+            "current_password": self.test_password,
+            "new_password": "NewTestPass123!"
+        }
+        
+        success, response = self.make_request('POST', '/profile/change-password', password_data, auth_required=True)
+        if success and response.get('message'):
+            # Update password for future tests
+            self.test_password = password_data['new_password']
+            self.log_result("Change Password", True, "Password changed successfully")
+        else:
+            self.log_result("Change Password", False, f"Response: {response}")
+
+    def test_subscription_history(self):
+        """Test GET /api/subscriptions/history - get subscription history"""
+        success, response = self.make_request('GET', '/subscriptions/history', auth_required=True)
+        if success and isinstance(response, list):
+            self.log_result("Subscription History", True, f"Retrieved {len(response)} subscription records")
+        else:
+            self.log_result("Subscription History", False, f"Response: {response}")
+
+    def test_subscription_change(self):
+        """Test POST /api/subscriptions/change - create checkout for plan change"""
+        change_data = {
+            "plan_type": "accounting",
+            "plan_tier": "growth",
+            "origin_url": "https://acctechmarkets.preview.emergentagent.com"
+        }
+        
+        success, response = self.make_request('POST', '/subscriptions/change', change_data, auth_required=True)
+        if success and response.get('checkout_url'):
+            self.log_result("Subscription Change", True, f"Checkout URL created for plan change")
+        else:
+            self.log_result("Subscription Change", False, f"Response: {response}")
+
+    def test_subscription_cancel(self):
+        """Test POST /api/subscriptions/cancel - cancel active subscription"""
+        # First, we need to create a subscription to cancel
+        # Since we can't complete a real payment, we'll test the endpoint with no active subscription
+        success, response = self.make_request('POST', '/subscriptions/cancel', {}, auth_required=True, expected_status=400)
+        if success or (response.get('detail') and 'No active subscription' in response['detail']):
+            self.log_result("Subscription Cancel", True, "Cancel endpoint works (no active subscription to cancel)")
+        else:
+            self.log_result("Subscription Cancel", False, f"Response: {response}")
+
+    def test_profile_with_test_credentials(self):
+        """Test profile endpoints with the provided test credentials"""
+        # Test with provided credentials
+        test_login_data = {
+            "email": "profile_test@test.com",
+            "password": "test123"
+        }
+        
+        success, response = self.make_request('POST', '/auth/login', test_login_data)
+        if success and response.get('access_token'):
+            # Store original token
+            original_token = self.token
+            self.token = response['access_token']
+            
+            # Test profile endpoints with test user
+            self.test_get_profile()
+            
+            # Restore original token
+            self.token = original_token
+            self.log_result("Profile Test Credentials", True, "Test credentials work for profile access")
+        else:
+            self.log_result("Profile Test Credentials", False, f"Test credentials failed: {response}")
+
     def test_ai_insights(self):
         """Test AI insights endpoint"""
         ai_data = {
