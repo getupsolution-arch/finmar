@@ -415,6 +415,19 @@ class FinmarAPITester:
             self.test_checkout_creation()
             self.test_logout()
         
+        # Admin tests
+        print("\n🔐 Testing Admin Endpoints")
+        print("-" * 30)
+        admin_login_success = self.test_admin_login()
+        if admin_login_success and self.admin_token:
+            self.test_admin_me()
+            self.test_admin_dashboard_stats()
+            self.test_admin_users_list()
+            self.test_admin_subscriptions_list()
+            self.test_admin_contacts_list()
+            self.test_admin_transactions_list()
+            self.test_admin_revenue_chart()
+        
         # Print summary
         print("\n" + "=" * 50)
         print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} passed")
