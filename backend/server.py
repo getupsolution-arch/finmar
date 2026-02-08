@@ -489,10 +489,14 @@ async def register(user_data: UserCreate):
         "phone": None,
         "subscription_status": "inactive",
         "current_plan": None,
+        "role": "user",
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
     await db.users.insert_one(user_doc)
+    
+    # Send admin notification (non-blocking)
+    asyncio.create_task(notify_new_user(user_data.name, user_data.email, user_data.business_name))
     
     token = create_jwt_token(user_id, user_data.email)
     
