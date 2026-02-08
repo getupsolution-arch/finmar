@@ -37,8 +37,13 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - ✅ `/api/auth/logout` - User logout
 - ✅ `/api/packages/*` - Pricing tiers endpoints
 - ✅ `/api/subscriptions/my` - Get user subscription
+- ✅ `/api/subscriptions/history` - Get subscription history
+- ✅ `/api/subscriptions/change` - Upgrade/downgrade subscription
+- ✅ `/api/subscriptions/cancel` - Cancel subscription
 - ✅ `/api/payments/checkout` - Create Stripe checkout
 - ✅ `/api/payments/status/{session_id}` - Check payment status
+- ✅ `/api/profile` - Get/update user profile
+- ✅ `/api/profile/change-password` - Change user password
 - ✅ `/api/ai/insights` - AI business insights (GPT-5.2)
 - ✅ `/api/contact` - Contact form submission
 
@@ -60,6 +65,7 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - ✅ Login - Email/password + Google OAuth
 - ✅ Register - Full registration form + Google OAuth
 - ✅ Dashboard - Subscription status, AI assistant, quick actions
+- ✅ Profile - User profile editing, password change, subscription management
 - ✅ Payment Success - Payment verification polling
 
 ### Frontend Pages - Admin Portal
@@ -69,6 +75,13 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - ✅ Admin Subscriptions - Subscription list with status management
 - ✅ Admin Contacts - Contact inquiry management with status workflow
 - ✅ Admin Transactions - Payment transaction history
+
+### Email Notifications (Resend)
+- ✅ New user registration notification
+- ✅ New subscription purchase notification
+- ✅ Subscription cancellation notification  
+- ✅ New contact inquiry notification
+- ⚠️ Note: In test mode, emails only sent to verified addresses. Verify domain in Resend for production.
 
 ### Admin Credentials
 - Email: sajeev@getupsolutions.com.au
@@ -82,13 +95,15 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - [x] Stripe payment integration
 - [x] AI insights dashboard
 - [x] Admin portal with full management features
+- [x] User profile management
+- [x] Subscription upgrade/downgrade/cancel flow
+- [x] Email notifications for admin alerts
 
 ### P1 (High Priority) - Next Phase
-- [ ] User profile management
-- [ ] Subscription upgrade/downgrade flow
-- [ ] Billing history page
-- [ ] Email notifications for payment events
-- [ ] Password reset flow
+- [ ] Billing history page with invoice downloads
+- [ ] Password reset flow with email verification
+- [ ] User-facing email notifications (payment receipts, welcome email)
+- [ ] Domain verification for production emails
 
 ### P2 (Medium Priority)
 - [ ] Service request/support tickets
@@ -105,8 +120,8 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - [ ] White-label options
 
 ## Next Tasks List
-1. Implement user profile editing
-2. Add subscription change flow (upgrade/downgrade)
-3. Create billing history with invoice downloads
-4. Add email notifications via SendGrid/Resend
-5. Implement password reset with email verification
+1. Verify domain in Resend for production email delivery
+2. Add billing history with invoice PDF downloads
+3. Implement password reset flow
+4. Add user-facing email notifications (receipts, welcome)
+5. Create service request/support ticket system
