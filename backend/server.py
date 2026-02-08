@@ -149,6 +149,20 @@ class UserUpdate(BaseModel):
 class ContactUpdate(BaseModel):
     status: str  # new, in_progress, resolved, closed
 
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    business_name: Optional[str] = None
+    phone: Optional[str] = None
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+class SubscriptionChange(BaseModel):
+    plan_type: str
+    plan_tier: str
+    origin_url: str
+
 class Subscription(BaseModel):
     model_config = ConfigDict(extra="ignore")
     subscription_id: str
