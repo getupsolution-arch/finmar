@@ -237,6 +237,151 @@ class FinmarAPITester:
         else:
             self.log_result("User Logout", False, f"Response: {response}")
 
+    # ==================== ADMIN TESTS ====================
+    
+    def test_admin_login(self):
+        """Test admin login with provided credentials"""
+        admin_data = {
+            "email": "sajeev@getupsolutions.com.au",
+            "password": "Getup@4665"
+        }
+        
+        success, response = self.make_request('POST', '/admin/login', admin_data)
+        if success and response.get('access_token'):
+            self.admin_token = response['access_token']
+            self.admin_id = response['admin']['admin_id']
+            self.log_result("Admin Login", True, f"Admin logged in: {self.admin_id}")
+            return True
+        else:
+            self.log_result("Admin Login", False, f"Response: {response}")
+            return False
+
+    def test_admin_me(self):
+        """Test getting current admin info"""
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        success, response = self.make_request('GET', '/admin/me', auth_required=True)
+        
+        # Override headers for admin token
+        url = f"{self.base_url}/admin/me"
+        try:
+            resp = self.session.get(url, headers=headers)
+            success = resp.status_code == 200
+            response = resp.json() if success else {"error": resp.text}
+        except Exception as e:
+            success, response = False, {"error": str(e)}
+        
+        if success and response.get('role') == 'admin':
+            self.log_result("Admin Me", True, f"Admin info retrieved")
+        else:
+            self.log_result("Admin Me", False, f"Response: {response}")
+
+    def test_admin_dashboard_stats(self):
+        """Test admin dashboard statistics"""
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        url = f"{self.base_url}/admin/dashboard/stats"
+        
+        try:
+            resp = self.session.get(url, headers=headers)
+            success = resp.status_code == 200
+            response = resp.json() if success else {"error": resp.text}
+        except Exception as e:
+            success, response = False, {"error": str(e)}
+        
+        expected_fields = ['total_users', 'active_subscriptions', 'new_contacts', 'total_revenue']
+        if success and all(field in response for field in expected_fields):
+            self.log_result("Admin Dashboard Stats", True, f"Stats retrieved: {len(response)} fields")
+        else:
+            self.log_result("Admin Dashboard Stats", False, f"Response: {response}")
+
+    def test_admin_users_list(self):
+        """Test admin users list endpoint"""
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        url = f"{self.base_url}/admin/users"
+        
+        try:
+            resp = self.session.get(url, headers=headers)
+            success = resp.status_code == 200
+            response = resp.json() if success else {"error": resp.text}
+        except Exception as e:
+            success, response = False, {"error": str(e)}
+        
+        if success and 'users' in response and 'total' in response:
+            user_count = len(response['users'])
+            self.log_result("Admin Users List", True, f"Retrieved {user_count} users")
+        else:
+            self.log_result("Admin Users List", False, f"Response: {response}")
+
+    def test_admin_subscriptions_list(self):
+        """Test admin subscriptions list endpoint"""
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        url = f"{self.base_url}/admin/subscriptions"
+        
+        try:
+            resp = self.session.get(url, headers=headers)
+            success = resp.status_code == 200
+            response = resp.json() if success else {"error": resp.text}
+        except Exception as e:
+            success, response = False, {"error": str(e)}
+        
+        if success and 'subscriptions' in response:
+            sub_count = len(response['subscriptions'])
+            self.log_result("Admin Subscriptions List", True, f"Retrieved {sub_count} subscriptions")
+        else:
+            self.log_result("Admin Subscriptions List", False, f"Response: {response}")
+
+    def test_admin_contacts_list(self):
+        """Test admin contacts list endpoint"""
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        url = f"{self.base_url}/admin/contacts"
+        
+        try:
+            resp = self.session.get(url, headers=headers)
+            success = resp.status_code == 200
+            response = resp.json() if success else {"error": resp.text}
+        except Exception as e:
+            success, response = False, {"error": str(e)}
+        
+        if success and 'contacts' in response:
+            contact_count = len(response['contacts'])
+            self.log_result("Admin Contacts List", True, f"Retrieved {contact_count} contacts")
+        else:
+            self.log_result("Admin Contacts List", False, f"Response: {response}")
+
+    def test_admin_transactions_list(self):
+        """Test admin transactions list endpoint"""
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        url = f"{self.base_url}/admin/transactions"
+        
+        try:
+            resp = self.session.get(url, headers=headers)
+            success = resp.status_code == 200
+            response = resp.json() if success else {"error": resp.text}
+        except Exception as e:
+            success, response = False, {"error": str(e)}
+        
+        if success and 'transactions' in response:
+            txn_count = len(response['transactions'])
+            self.log_result("Admin Transactions List", True, f"Retrieved {txn_count} transactions")
+        else:
+            self.log_result("Admin Transactions List", False, f"Response: {response}")
+
+    def test_admin_revenue_chart(self):
+        """Test admin revenue chart endpoint"""
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        url = f"{self.base_url}/admin/revenue/chart?days=30"
+        
+        try:
+            resp = self.session.get(url, headers=headers)
+            success = resp.status_code == 200
+            response = resp.json() if success else {"error": resp.text}
+        except Exception as e:
+            success, response = False, {"error": str(e)}
+        
+        if success and 'data' in response:
+            self.log_result("Admin Revenue Chart", True, f"Chart data retrieved")
+        else:
+            self.log_result("Admin Revenue Chart", False, f"Response: {response}")
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting FINMAR API Tests")
