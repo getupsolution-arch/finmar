@@ -779,6 +779,12 @@ async def get_payment_status(session_id: str, current_user: User = Depends(get_c
                     "current_plan": f"{txn['plan_type']}_{txn['plan_tier']}"
                 }}
             )
+            
+            # Send admin notification (non-blocking)
+            asyncio.create_task(notify_new_subscription(
+                current_user.name, current_user.email,
+                txn["plan_type"], txn["plan_tier"], txn["amount"]
+            ))
     
     return {
         "status": status.status,
