@@ -3,13 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { 
     Check, Calculator, Megaphone, Sparkles, ArrowRight, Star,
-    Loader2, Users, FileText, BarChart3
+    Loader2, Building2, Phone, MapPin, FileText, Briefcase
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -19,13 +23,24 @@ const PricingPage = () => {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [showBusinessForm, setShowBusinessForm] = useState(false);
+    const [businessDetails, setBusinessDetails] = useState({
+        business_name: '',
+        abn: '',
+        industry: '',
+        address: '',
+        city: '',
+        state: '',
+        postcode: '',
+        phone: ''
+    });
     const [packages, setPackages] = useState({
         accounting: {},
         marketing: {},
         combined: {},
         addons: {}
     });
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, token, updateUser } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
