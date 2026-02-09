@@ -60,10 +60,10 @@ const Navbar = () => {
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${scrolled ? 'bg-finmar-navy' : 'bg-finmar-gold'}`}>
-                            <span className={`font-heading font-bold text-xl ${scrolled ? 'text-white' : 'text-finmar-navy'}`}>F</span>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${useDarkText ? 'bg-finmar-navy' : 'bg-finmar-gold'}`}>
+                            <span className={`font-heading font-bold text-xl ${useDarkText ? 'text-white' : 'text-finmar-navy'}`}>F</span>
                         </div>
-                        <span className={`font-heading font-bold text-2xl transition-colors ${scrolled ? 'text-finmar-navy' : 'text-white'}`}>FINMAR</span>
+                        <span className={`font-heading font-bold text-2xl transition-colors ${useDarkText ? 'text-finmar-navy' : 'text-white'}`}>FINMAR</span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -76,7 +76,7 @@ const Navbar = () => {
                                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                                     isActive(link.href) 
                                         ? 'text-finmar-gold' 
-                                        : scrolled ? 'text-slate-600 hover:text-finmar-navy' : 'text-white/80 hover:text-white'
+                                        : useDarkText ? 'text-slate-600 hover:text-finmar-navy' : 'text-white/80 hover:text-white'
                                 }`}
                             >
                                 <link.icon className="w-4 h-4" />
