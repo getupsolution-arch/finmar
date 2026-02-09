@@ -244,8 +244,9 @@ const PricingPage = () => {
             </ul>
             
             <Button 
-                variant={selectedPlan === key ? 'default' : 'outline'}
-                className={`w-full ${selectedPlan === key ? 'bg-finmar-gold hover:bg-finmar-gold/90 text-finmar-navy' : ''}`}
+                className={`w-full ${selectedPlan === key 
+                    ? 'bg-finmar-navy hover:bg-finmar-navy/90 text-white' 
+                    : 'bg-finmar-gold hover:bg-finmar-gold/90 text-finmar-navy'}`}
             >
                 {selectedPlan === key ? 'Selected' : 'Select Plan'}
             </Button>
