@@ -41,23 +41,25 @@ function AppRouter() {
     }
 
     return (
-        <Routes>
-            {/* Public routes with layout */}
-            <Route element={<Layout />}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/services" element={<ServicesPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/payment-success" element={
-                    <ProtectedRoute>
-                        <PaymentSuccessPage />
-                    </ProtectedRoute>
-                } />
-                <Route path="/dashboard" element={
-                    <ProtectedRoute>
-                        <DashboardPage />
-                    </ProtectedRoute>
-                } />
+        <>
+            <ScrollToTop />
+            <Routes>
+                {/* Public routes with layout */}
+                <Route element={<Layout />}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/services" element={<ServicesPage />} />
+                    <Route path="/pricing" element={<PricingPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/payment-success" element={
+                        <ProtectedRoute>
+                            <PaymentSuccessPage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/dashboard" element={
+                        <ProtectedRoute>
+                            <DashboardPage />
+                        </ProtectedRoute>
+                    } />
                 <Route path="/profile" element={
                     <ProtectedRoute>
                         <ProfilePage />
