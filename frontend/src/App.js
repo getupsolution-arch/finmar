@@ -85,6 +85,7 @@ function AppRouter() {
                 <Route path="transactions" element={<AdminTransactionsPage />} />
             </Route>
         </Routes>
+        </>
     );
 }
 
