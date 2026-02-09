@@ -60,8 +60,8 @@ const Navbar = () => {
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-finmar-navy">
-                            <span className="font-heading font-bold text-xl text-white">F</span>
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-finmar-gold">
+                            <span className="font-heading font-bold text-xl text-finmar-navy">F</span>
                         </div>
                         <span className={`font-heading font-bold text-2xl transition-colors ${useDarkText ? 'text-finmar-navy' : 'text-white'}`}>FINMAR</span>
                     </Link>
