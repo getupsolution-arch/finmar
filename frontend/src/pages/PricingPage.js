@@ -110,6 +110,66 @@ const PricingPage = () => {
         return total;
     };
 
+    // Pre-fill business details from user profile
+    useEffect(() => {
+        if (user) {
+            setBusinessDetails(prev => ({
+                ...prev,
+                business_name: user.business_name || '',
+                phone: user.phone || ''
+            }));
+        }
+    }, [user]);
+
+    const handleSubscribeClick = () => {
+        if (!selectedPlan) {
+            toast.error('Please select a plan');
+            return;
+        }
+
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: '/pricing' } });
+            return;
+        }
+
+        // Show business details form
+        setShowBusinessForm(true);
+    };
+
+    const handleBusinessDetailsSubmit = async () => {
+        // Validate required fields
+        if (!businessDetails.business_name || !businessDetails.industry || !businessDetails.phone) {
+            toast.error('Please fill in all required fields');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Save business details to user profile
+            await axios.put(`${API}/profile/business`, businessDetails, {
+                headers: { Authorization: `Bearer ${token}` },
+                withCredentials: true
+            });
+
+            // Proceed to checkout
+            const response = await axios.post(`${API}/payments/checkout`, {
+                plan_type: selectedCategory,
+                plan_tier: selectedPlan,
+                add_ons: selectedAddons,
+                origin_url: window.location.origin
+            }, {
+                headers: { Authorization: `Bearer ${token}` },
+                withCredentials: true
+            });
+
+            window.location.href = response.data.checkout_url;
+        } catch (error) {
+            toast.error(error.response?.data?.detail || 'Failed to start checkout');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubscribe = async () => {
         if (!selectedPlan) {
             toast.error('Please select a plan');
