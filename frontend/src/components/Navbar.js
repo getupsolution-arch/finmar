@@ -22,6 +22,13 @@ const Navbar = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    // Pages with dark hero backgrounds (need white text when not scrolled)
+    const darkHeroPages = ['/'];
+    const hasDarkHero = darkHeroPages.includes(location.pathname);
+    
+    // Use dark text if scrolled OR if page doesn't have dark hero
+    const useDarkText = scrolled || !hasDarkHero;
+
     React.useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener('scroll', handleScroll);
@@ -46,7 +53,7 @@ const Navbar = () => {
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-                scrolled ? 'bg-white/90 backdrop-blur-lg shadow-sm' : 'bg-transparent'
+                scrolled || !hasDarkHero ? 'bg-white/90 backdrop-blur-lg shadow-sm' : 'bg-transparent'
             }`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
