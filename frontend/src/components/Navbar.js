@@ -121,7 +121,7 @@ const Navbar = () => {
                         ) : (
                             <>
                                 <Link to="/login">
-                                    <Button variant="ghost" className={scrolled ? '' : 'text-white hover:text-white hover:bg-white/10'} data-testid="nav-login-btn">Login</Button>
+                                    <Button variant="ghost" className={useDarkText ? '' : 'text-white hover:text-white hover:bg-white/10'} data-testid="nav-login-btn">Login</Button>
                                 </Link>
                                 <Link to="/pricing">
                                     <Button 
