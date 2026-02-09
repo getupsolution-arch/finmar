@@ -7,6 +7,7 @@ import AdminLayout from './components/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
 import AuthCallback from './components/AuthCallback';
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import HomePage from './pages/HomePage';
