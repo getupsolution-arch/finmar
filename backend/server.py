@@ -158,6 +158,16 @@ class PasswordChange(BaseModel):
     current_password: str
     new_password: str
 
+class BusinessDetailsUpdate(BaseModel):
+    business_name: str
+    abn: str
+    industry: str
+    phone: str
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postcode: Optional[str] = None
+
 class SubscriptionChange(BaseModel):
     plan_type: str
     plan_tier: str
