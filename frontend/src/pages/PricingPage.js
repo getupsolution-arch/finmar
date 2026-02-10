@@ -116,6 +116,8 @@ const PricingPage = () => {
             setBusinessDetails(prev => ({
                 ...prev,
                 business_name: user.business_name || '',
+                abn: user.abn || '',
+                industry: user.industry || '',
                 phone: user.phone || ''
             }));
         }
