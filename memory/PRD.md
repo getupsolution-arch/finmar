@@ -19,6 +19,7 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - Stripe payment integration
 - JWT + Google OAuth authentication
 - Admin portal for platform management
+- Business details collection before subscription (Business Name, ABN, Industry, Phone)
 
 ## Architecture
 - **Frontend**: React 19 with Tailwind CSS, Framer Motion, shadcn/ui
@@ -27,7 +28,7 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - **Payments**: Stripe via emergentintegrations library
 - **Auth**: JWT (custom) + Google OAuth (Emergent Auth)
 
-## What's Been Implemented (Feb 8, 2026)
+## What's Been Implemented (Feb 10, 2026)
 
 ### Backend API Endpoints - User Facing
 - ✅ `/api/auth/register` - User registration with JWT
@@ -43,6 +44,7 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - ✅ `/api/payments/checkout` - Create Stripe checkout
 - ✅ `/api/payments/status/{session_id}` - Check payment status
 - ✅ `/api/profile` - Get/update user profile
+- ✅ `/api/profile/business` - Update business details (NEW - Feb 10, 2026)
 - ✅ `/api/profile/change-password` - Change user password
 - ✅ `/api/ai/insights` - AI business insights (GPT-5.2)
 - ✅ `/api/contact` - Contact form submission
@@ -61,6 +63,7 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - ✅ Homepage - Hero, stats, services overview, testimonials, CTA
 - ✅ Services - Accounting, Marketing, AI tools sections
 - ✅ Pricing - Interactive tier selection with Combined/Accounting/Marketing tabs
+  - ✅ Business Details Modal - Collects Business Name, ABN, Industry, Phone before checkout (NEW - Feb 10, 2026)
 - ✅ Contact - Contact form with service interest dropdown
 - ✅ Login - Email/password + Google OAuth
 - ✅ Register - Full registration form + Google OAuth
@@ -98,6 +101,7 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - [x] User profile management
 - [x] Subscription upgrade/downgrade/cancel flow
 - [x] Email notifications for admin alerts
+- [x] Business details form before subscription checkout
 
 ### P1 (High Priority) - Next Phase
 - [ ] Billing history page with invoice downloads
