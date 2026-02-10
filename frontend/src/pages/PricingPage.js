@@ -138,7 +138,7 @@ const PricingPage = () => {
 
     const handleBusinessDetailsSubmit = async () => {
         // Validate required fields
-        if (!businessDetails.business_name || !businessDetails.industry || !businessDetails.phone) {
+        if (!businessDetails.business_name || !businessDetails.abn || !businessDetails.industry || !businessDetails.phone) {
             toast.error('Please fill in all required fields');
             return;
         }
