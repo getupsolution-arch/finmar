@@ -675,6 +675,38 @@ async def change_password(data: PasswordChange, current_user: User = Depends(get
     
     return {"message": "Password changed successfully"}
 
+@api_router.put("/profile/business", response_model=User)
+async def update_business_details(business: BusinessDetailsUpdate, current_user: User = Depends(get_current_user)):
+    """Update user business details before subscription"""
+    update_data = {
+        "business_name": business.business_name,
+        "abn": business.abn,
+        "industry": business.industry,
+        "phone": business.phone
+    }
+    
+    # Add optional fields if provided
+    if business.address:
+        update_data["address"] = business.address
+    if business.city:
+        update_data["city"] = business.city
+    if business.state:
+        update_data["state"] = business.state
+    if business.postcode:
+        update_data["postcode"] = business.postcode
+    
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": update_data}
+    )
+    
+    # Get updated user
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0, "password_hash": 0})
+    if isinstance(user_doc.get('created_at'), str):
+        user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
+    
+    return User(**user_doc)
+
 # ==================== SUBSCRIPTION ROUTES ====================
 
 @api_router.get("/packages/accounting")
