@@ -402,9 +402,9 @@ const PricingPage = () => {
                             <Building2 className="w-5 h-5 text-finmar-gold" />
                             Business Details
                         </DialogTitle>
-                        <p className="text-sm text-slate-500 mt-1">
+                        <DialogDescription className="text-sm text-slate-500 mt-1">
                             Please provide your business information to continue with your subscription.
-                        </p>
+                        </DialogDescription>
                     </DialogHeader>
                     
                     <div className="space-y-4 py-4">
