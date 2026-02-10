@@ -110,7 +110,13 @@ class User(BaseModel):
     name: str
     picture: Optional[str] = None
     business_name: Optional[str] = None
+    abn: Optional[str] = None
+    industry: Optional[str] = None
     phone: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    postcode: Optional[str] = None
     created_at: datetime
     subscription_status: Optional[str] = "inactive"
     current_plan: Optional[str] = None
