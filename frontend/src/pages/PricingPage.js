@@ -392,6 +392,133 @@ const PricingPage = () => {
                 </motion.section>
             )}
 
+            {/* Business Details Modal */}
+            <Dialog open={showBusinessForm} onOpenChange={setShowBusinessForm}>
+                <DialogContent className="sm:max-w-lg" data-testid="business-details-modal">
+                    <DialogHeader>
+                        <DialogTitle className="font-heading text-xl text-finmar-navy flex items-center gap-2">
+                            <Building2 className="w-5 h-5 text-finmar-gold" />
+                            Business Details
+                        </DialogTitle>
+                        <p className="text-sm text-slate-500 mt-1">
+                            Please provide your business information to continue with your subscription.
+                        </p>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="business_name" className="text-finmar-navy font-medium">
+                                Business Name <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="relative">
+                                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
+                                    id="business_name"
+                                    placeholder="Enter your business name"
+                                    value={businessDetails.business_name}
+                                    onChange={(e) => setBusinessDetails(prev => ({ ...prev, business_name: e.target.value }))}
+                                    className="pl-10"
+                                    data-testid="input-business-name"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="abn" className="text-finmar-navy font-medium">
+                                ABN (Australian Business Number) <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="relative">
+                                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
+                                    id="abn"
+                                    placeholder="XX XXX XXX XXX"
+                                    value={businessDetails.abn}
+                                    onChange={(e) => setBusinessDetails(prev => ({ ...prev, abn: e.target.value }))}
+                                    className="pl-10"
+                                    maxLength={14}
+                                    data-testid="input-abn"
+                                />
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="industry" className="text-finmar-navy font-medium">
+                                Industry <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={businessDetails.industry}
+                                onValueChange={(value) => setBusinessDetails(prev => ({ ...prev, industry: value }))}
+                            >
+                                <SelectTrigger data-testid="select-industry">
+                                    <SelectValue placeholder="Select your industry" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="retail">Retail & E-commerce</SelectItem>
+                                    <SelectItem value="hospitality">Hospitality & Food</SelectItem>
+                                    <SelectItem value="construction">Construction & Trades</SelectItem>
+                                    <SelectItem value="healthcare">Healthcare & Medical</SelectItem>
+                                    <SelectItem value="professional">Professional Services</SelectItem>
+                                    <SelectItem value="technology">Technology & IT</SelectItem>
+                                    <SelectItem value="ndis">NDIS Provider</SelectItem>
+                                    <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                                    <SelectItem value="transport">Transport & Logistics</SelectItem>
+                                    <SelectItem value="real_estate">Real Estate</SelectItem>
+                                    <SelectItem value="education">Education & Training</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <Label htmlFor="phone" className="text-finmar-navy font-medium">
+                                Phone Number <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="relative">
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
+                                    id="phone"
+                                    type="tel"
+                                    placeholder="04XX XXX XXX"
+                                    value={businessDetails.phone}
+                                    onChange={(e) => setBusinessDetails(prev => ({ ...prev, phone: e.target.value }))}
+                                    className="pl-10"
+                                    data-testid="input-phone"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setShowBusinessForm(false)}
+                            className="border-slate-200"
+                            data-testid="cancel-business-form"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleBusinessDetailsSubmit}
+                            disabled={loading}
+                            className="bg-finmar-gold hover:bg-finmar-gold/90 text-finmar-navy font-semibold"
+                            data-testid="submit-business-form"
+                        >
+                            {loading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Processing...
+                                </>
+                            ) : (
+                                <>
+                                    Continue to Payment
+                                    <ArrowRight className="w-4 h-4 ml-2" />
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {/* FAQ */}
             <section className="py-16">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
