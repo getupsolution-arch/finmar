@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class FinmarAPITester:
-    def __init__(self, base_url="https://acctechmarkets.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://biz-finmar.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.user_id = None
@@ -246,7 +246,7 @@ class FinmarAPITester:
         change_data = {
             "plan_type": "accounting",
             "plan_tier": "growth",
-            "origin_url": "https://acctechmarkets.preview.emergentagent.com"
+            "origin_url": "https://biz-finmar.preview.emergentagent.com"
         }
         
         success, response = self.make_request('POST', '/subscriptions/change', change_data, auth_required=True)
@@ -320,7 +320,7 @@ class FinmarAPITester:
             "plan_type": "accounting",
             "plan_tier": "starter",
             "add_ons": ["ai_dashboard"],
-            "origin_url": "https://acctechmarkets.preview.emergentagent.com"
+            "origin_url": "https://biz-finmar.preview.emergentagent.com"
         }
         
         success, response = self.make_request('POST', '/payments/checkout', checkout_data, auth_required=True)
