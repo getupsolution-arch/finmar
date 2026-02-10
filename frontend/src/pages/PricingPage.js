@@ -370,7 +370,7 @@ const PricingPage = () => {
                             </div>
                             <Button
                                 size="lg"
-                                onClick={handleSubscribe}
+                                onClick={handleSubscribeClick}
                                 disabled={loading || !selectedPlan}
                                 className="bg-finmar-gold hover:bg-finmar-gold/90 text-finmar-navy font-semibold rounded-full px-10 h-14"
                                 data-testid="subscribe-btn"
