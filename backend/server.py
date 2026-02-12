@@ -1089,6 +1089,32 @@ async def get_chat_history(current_user: User = Depends(get_current_user)):
     ).sort("created_at", -1).limit(20).to_list(20)
     return chats
 
+# ==================== PUSH NOTIFICATIONS ====================
+
+class PushTokenRegister(BaseModel):
+    token: str
+    platform: str  # 'ios' or 'android'
+
+@api_router.post("/notifications/register")
+async def register_push_token(token_data: PushTokenRegister, current_user: User = Depends(get_current_user)):
+    """Register device push notification token"""
+    await db.push_tokens.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {
+            "token": token_data.token,
+            "platform": token_data.platform,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    return {"message": "Push token registered successfully"}
+
+@api_router.delete("/notifications/unregister")
+async def unregister_push_token(current_user: User = Depends(get_current_user)):
+    """Unregister device push notification token"""
+    await db.push_tokens.delete_one({"user_id": current_user.user_id})
+    return {"message": "Push token unregistered"}
+
 # ==================== CONTACT ROUTES ====================
 
 @api_router.post("/contact")
