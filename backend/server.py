@@ -1192,23 +1192,37 @@ async def admin_login(credentials: AdminLogin):
     """Admin login endpoint"""
     email = credentials.email.lower()
     
-    # Check hardcoded admin credentials first
-    if email in ADMIN_CREDENTIALS:
-        admin_data = ADMIN_CREDENTIALS[email]
-        if verify_password(credentials.password, admin_data["password_hash"]):
+    # Check environment-based admin credentials first
+    if ADMIN_EMAIL and ADMIN_PASSWORD_HASH and email == ADMIN_EMAIL:
+        if verify_password(credentials.password, ADMIN_PASSWORD_HASH):
+            admin_id = f"admin_{email.split('@')[0][:8]}"
             # Create or update admin in database
             admin_doc = await db.admins.find_one({"email": email}, {"_id": 0})
             if not admin_doc:
                 admin_doc = {
-                    "admin_id": admin_data["admin_id"],
+                    "admin_id": admin_id,
                     "email": email,
-                    "name": admin_data["name"],
+                    "name": "Admin",
                     "role": "admin",
                     "created_at": datetime.now(timezone.utc).isoformat()
                 }
                 await db.admins.insert_one(admin_doc)
             
-            token = create_jwt_token(admin_data["admin_id"], email, "admin")
+            token = create_jwt_token(admin_doc.get("admin_id", admin_id), email, "admin")
+            
+            if isinstance(admin_doc.get('created_at'), str):
+                admin_doc['created_at'] = datetime.fromisoformat(admin_doc['created_at'])
+            
+            return AdminTokenResponse(
+                access_token=token,
+                admin=AdminUser(**admin_doc)
+            )
+    
+    # Check admins collection in database
+    admin_doc = await db.admins.find_one({"email": email}, {"_id": 0})
+    if admin_doc and admin_doc.get("password_hash"):
+        if verify_password(credentials.password, admin_doc["password_hash"]):
+            token = create_jwt_token(admin_doc["admin_id"], email, "admin")
             
             if isinstance(admin_doc.get('created_at'), str):
                 admin_doc['created_at'] = datetime.fromisoformat(admin_doc['created_at'])
