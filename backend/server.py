@@ -1382,19 +1382,31 @@ async def get_all_subscriptions(
     status: Optional[str] = None,
     admin: AdminUser = Depends(get_current_admin)
 ):
-    """Get all subscriptions"""
-    query = {}
+    """Get all subscriptions with user info using aggregation (optimized)"""
+    match_stage = {}
     if status:
-        query["status"] = status
+        match_stage["status"] = status
     
-    subscriptions = await db.subscriptions.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
-    total = await db.subscriptions.count_documents(query)
+    pipeline = [
+        {"$match": match_stage},
+        {"$skip": skip},
+        {"$limit": limit},
+        {"$lookup": {
+            "from": "users",
+            "localField": "user_id",
+            "foreignField": "user_id",
+            "as": "user_info"
+        }},
+        {"$unwind": {"path": "$user_info", "preserveNullAndEmptyArrays": True}},
+        {"$addFields": {
+            "user_name": {"$ifNull": ["$user_info.name", "Unknown"]},
+            "user_email": {"$ifNull": ["$user_info.email", "Unknown"]}
+        }},
+        {"$project": {"user_info": 0, "_id": 0}}
+    ]
     
-    # Enrich with user info
-    for sub in subscriptions:
-        user = await db.users.find_one({"user_id": sub["user_id"]}, {"_id": 0, "name": 1, "email": 1})
-        sub["user_name"] = user["name"] if user else "Unknown"
-        sub["user_email"] = user["email"] if user else "Unknown"
+    subscriptions = await db.subscriptions.aggregate(pipeline).to_list(limit)
+    total = await db.subscriptions.count_documents(match_stage)
     
     return {"subscriptions": subscriptions, "total": total}
 
