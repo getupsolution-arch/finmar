@@ -1,213 +1,221 @@
-# FINMAR Mobile App - Build Guide
+# FINMAR Mobile App Build Guide
 
 ## Overview
-FINMAR mobile app is built using **Capacitor** - a cross-platform native runtime that allows the React web app to run as a native iOS and Android application.
+FINMAR mobile app is built using Capacitor 6, which wraps the existing React web application into native iOS and Android apps.
 
 ## Features
 - ✅ User Dashboard & Subscription Management
 - ✅ AI Business Assistant
 - ✅ Push Notifications (iOS & Android)
-- ✅ Offline Access with Data Caching
-- ✅ Network Status Detection
+- ✅ Offline Access with data caching
+- ✅ Network status detection
 
 ## Prerequisites
 
-### For iOS Development
+### For iOS Development:
 - macOS computer
-- Xcode 14+ (from Mac App Store)
-- Apple Developer Account ($99/year) - for App Store submission
-- CocoaPods: `sudo gem install cocoapods`
+- Xcode 15+ (from App Store)
+- Apple Developer Account ($99/year for App Store distribution)
+- CocoaPods (`sudo gem install cocoapods`)
 
-### For Android Development
-- Android Studio (https://developer.android.com/studio)
-- Java 17+ JDK
-- Google Play Developer Account ($25 one-time) - for Play Store submission
+### For Android Development:
+- Android Studio (any platform)
+- JDK 17+
+- Google Play Developer Account ($25 one-time)
 
 ## Project Structure
 ```
-/app/frontend/
+frontend/
 ├── capacitor.config.json    # Capacitor configuration
-├── src/mobile/
-│   ├── index.js            # Mobile exports
-│   ├── capacitor.js        # Native API utilities
-│   ├── hooks.js            # React hooks for mobile features
-│   └── MobileProvider.js   # Context provider for mobile state
-├── ios/                    # iOS native project (generated)
-└── android/                # Android native project (generated)
-```
-
-## Setup Instructions
-
-### Step 1: Build the Web App
-```bash
-cd /app/frontend
-yarn build
-```
-
-### Step 2: Add Native Platforms
-
-#### Add iOS Platform
-```bash
-npx cap add ios
-```
-
-#### Add Android Platform
-```bash
-npx cap add android
-```
-
-### Step 3: Sync Web Assets to Native Projects
-```bash
-npx cap sync
-```
-
-### Step 4: Configure Push Notifications
-
-#### For iOS (APNs)
-1. In Xcode, enable "Push Notifications" capability
-2. Create APNs key in Apple Developer Portal
-3. Upload key to your push notification service (e.g., Firebase, OneSignal)
-
-#### For Android (FCM)
-1. Create Firebase project at https://console.firebase.google.com
-2. Add Android app with package name: `com.finmar.app`
-3. Download `google-services.json` and place in `android/app/`
-4. Add Firebase to your backend for sending notifications
-
-### Step 5: Open in IDE
-
-#### Open iOS in Xcode
-```bash
-npx cap open ios
-```
-
-#### Open Android in Android Studio
-```bash
-npx cap open android
-```
-
-## Building for Release
-
-### iOS Release Build
-1. Open in Xcode: `npx cap open ios`
-2. Select your Team in Signing & Capabilities
-3. Product → Archive
-4. Distribute App → App Store Connect
-
-### Android Release Build
-1. Open in Android Studio: `npx cap open android`
-2. Build → Generate Signed Bundle/APK
-3. Create keystore (first time only)
-4. Upload to Google Play Console
-
-## App Icons & Splash Screens
-
-### Generate Assets
-Use a tool like https://www.appicon.co/ to generate all required sizes from a 1024x1024 source image.
-
-### iOS Icons
-Place in: `ios/App/App/Assets.xcassets/AppIcon.appiconset/`
-
-### Android Icons
-Place in: `android/app/src/main/res/` (mipmap folders)
-
-### Splash Screen
-Configure in `capacitor.config.json`:
-```json
-{
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 2000,
-      "backgroundColor": "#0f172a"
-    }
-  }
-}
+├── ios/                     # iOS native project
+│   └── App/
+│       └── App/
+│           └── AppDelegate.swift
+├── android/                 # Android native project
+│   └── app/
+│       └── src/
+│           └── main/
+│               ├── AndroidManifest.xml
+│               └── java/com/finmar/app/
+├── src/
+│   └── mobile/             # Mobile-specific code
+│       ├── capacitor.js    # Native platform utilities
+│       ├── hooks.js        # React hooks for mobile features
+│       ├── MobileProvider.js # Context provider
+│       └── index.js
 ```
 
 ## Development Workflow
 
-### Live Reload (Development)
+### 1. Make Web Changes
 ```bash
-# Build and sync
-yarn build && npx cap sync
-
-# For iOS with live reload
-npx cap run ios --livereload --external
-
-# For Android with live reload
-npx cap run android --livereload --external
+cd /app/frontend
+# Make your code changes
 ```
 
-### Update After Code Changes
+### 2. Build Web Assets
 ```bash
-yarn build && npx cap sync
+cd /app/frontend
+DISABLE_ESLINT_PLUGIN=true yarn build
 ```
 
-## Push Notification Server Integration
+### 3. Sync to Native Projects
+```bash
+npx cap sync
+```
 
-Add this endpoint to your backend to register device tokens:
+### 4. Open in IDE
+```bash
+# For iOS
+npx cap open ios
 
-```python
-@api_router.post("/notifications/register")
-async def register_push_token(
-    token_data: dict,
-    current_user: User = Depends(get_current_user)
-):
-    await db.push_tokens.update_one(
-        {"user_id": current_user.user_id},
-        {"$set": {
-            "token": token_data["token"],
-            "platform": token_data["platform"],
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }},
-        upsert=True
-    )
-    return {"message": "Token registered"}
+# For Android  
+npx cap open android
+```
+
+## Push Notifications Setup
+
+### Firebase Cloud Messaging (Android)
+1. Create project at https://console.firebase.google.com
+2. Add Android app with package name `com.finmar.app`
+3. Download `google-services.json`
+4. Place in `android/app/google-services.json`
+
+### Apple Push Notification Service (iOS)
+1. Go to Apple Developer Portal
+2. Create App ID with Push Notifications capability
+3. Create APNs Key or Certificate
+4. Configure in Xcode project capabilities
+
+## Building for Production
+
+### iOS Build
+```bash
+cd ios
+pod install
+# Open in Xcode and Archive
+# or use xcodebuild CLI
+```
+
+### Android Build
+```bash
+cd android
+./gradlew assembleRelease
+# APK will be in app/build/outputs/apk/release/
+```
+
+## App Store Submission
+
+### iOS (App Store Connect)
+1. Archive build in Xcode
+2. Upload to App Store Connect
+3. Complete app metadata
+4. Submit for review
+
+### Android (Google Play Console)
+1. Create signed AAB/APK
+2. Upload to Google Play Console
+3. Complete store listing
+4. Submit for review
+
+## API Endpoints for Mobile
+
+### Push Token Registration
+```
+POST /api/notifications/register
+{
+  "token": "firebase_or_apns_token",
+  "platform": "ios" | "android"
+}
+```
+
+### Unregister Token
+```
+DELETE /api/notifications/unregister?platform=ios
+```
+
+## Offline Support
+
+The app caches:
+- User profile data
+- Subscription information
+- AI chat history
+
+When offline:
+- Users see cached data
+- Actions are queued for sync
+- Offline indicator appears at top of screen
+
+## Testing
+
+### On Device
+```bash
+# iOS
+npx cap run ios
+
+# Android
+npx cap run android
+```
+
+### Simulators
+```bash
+# iOS Simulator (macOS only)
+npx cap run ios --target="iPhone 15 Pro"
+
+# Android Emulator
+npx cap run android --target="Pixel_7_API_34"
+```
+
+## Environment Configuration
+
+Update `capacitor.config.json` for different environments:
+
+```json
+{
+  "server": {
+    "url": "https://your-production-url.com",
+    "cleartext": false
+  }
+}
 ```
 
 ## Troubleshooting
 
-### iOS Build Fails
-- Run `pod install` in the `ios/App` directory
-- Clean build: Xcode → Product → Clean Build Folder
-
-### Android Build Fails
-- Sync Gradle: File → Sync Project with Gradle Files
-- Invalidate caches: File → Invalidate Caches / Restart
-
-### Push Notifications Not Working
-- iOS: Check APNs certificate/key is valid
-- Android: Verify `google-services.json` is in correct location
-- Both: Ensure notification permissions are granted
-
-## App Store Checklist
-
-### iOS App Store
-- [ ] App icons (all sizes)
-- [ ] Screenshots (6.5", 5.5" iPhones, iPad)
-- [ ] App description and keywords
-- [ ] Privacy policy URL
-- [ ] Age rating
-- [ ] APNs configured
-
-### Google Play Store
-- [ ] App icons and feature graphic
-- [ ] Screenshots (phone and tablet)
-- [ ] App description
-- [ ] Privacy policy URL
-- [ ] Content rating questionnaire
-- [ ] FCM configured
-
-## Environment Configuration
-
-For production builds, update the API URL in your build:
-
+### iOS Build Issues
 ```bash
-# Create production .env
-REACT_APP_BACKEND_URL=https://api.finmar.com.au
+cd ios
+pod deintegrate
+pod install
 ```
 
-Then build:
+### Android Build Issues
 ```bash
-yarn build && npx cap sync
+cd android
+./gradlew clean
+./gradlew build
 ```
+
+### Capacitor Sync Issues
+```bash
+npx cap sync --force
+```
+
+## Version Management
+
+Update version in:
+- `package.json` (version field)
+- `ios/App/App/Info.plist` (CFBundleShortVersionString)
+- `android/app/build.gradle` (versionName, versionCode)
+
+---
+
+## Quick Reference
+
+| Command | Description |
+|---------|-------------|
+| `yarn build` | Build web assets |
+| `npx cap sync` | Sync web to native |
+| `npx cap open ios` | Open Xcode |
+| `npx cap open android` | Open Android Studio |
+| `npx cap run ios` | Run on iOS device |
+| `npx cap run android` | Run on Android device |
