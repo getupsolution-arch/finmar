@@ -1472,6 +1472,45 @@ async def get_revenue_chart(days: int = 30, admin: AdminUser = Depends(get_curre
     
     return {"data": results, "period_days": days}
 
+# ==================== PUSH NOTIFICATIONS ====================
+
+class PushTokenRequest(BaseModel):
+    token: str
+    platform: str  # ios, android, web
+
+@api_router.post("/notifications/register")
+async def register_push_token(request: PushTokenRequest, current_user: User = Depends(get_current_user)):
+    """Register push notification token for user"""
+    await db.push_tokens.update_one(
+        {"user_id": current_user.user_id, "platform": request.platform},
+        {"$set": {
+            "user_id": current_user.user_id,
+            "token": request.token,
+            "platform": request.platform,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }},
+        upsert=True
+    )
+    return {"message": "Push token registered successfully"}
+
+@api_router.delete("/notifications/unregister")
+async def unregister_push_token(platform: str, current_user: User = Depends(get_current_user)):
+    """Unregister push notification token"""
+    await db.push_tokens.delete_one({
+        "user_id": current_user.user_id,
+        "platform": platform
+    })
+    return {"message": "Push token unregistered"}
+
+@api_router.get("/notifications/tokens")
+async def get_push_tokens(current_user: User = Depends(get_current_user)):
+    """Get registered push tokens for current user"""
+    tokens = await db.push_tokens.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).to_list(10)
+    return {"tokens": tokens}
+
 # ==================== GENERAL ROUTES ====================
 
 @api_router.get("/")
