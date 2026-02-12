@@ -895,7 +895,7 @@ async def create_checkout(checkout_data: CheckoutRequest, current_user: User = D
     cancel_url = f"{checkout_data.origin_url}/pricing"
     
     # Initialize Stripe
-    webhook_url = f"{os.environ['REACT_APP_BACKEND_URL']}/api/webhook/stripe"
+    webhook_url = f"{os.environ['BACKEND_URL']}/api/webhook/stripe"
     
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
     
