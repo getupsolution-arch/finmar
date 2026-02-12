@@ -1143,14 +1143,9 @@ async def submit_contact(contact: ContactRequest):
 
 # ==================== ADMIN ROUTES ====================
 
-# Admin credentials - can be stored in env or database
-ADMIN_CREDENTIALS = {
-    "sajeev@getupsolutions.com.au": {
-        "password_hash": hash_password("Getup@4665"),
-        "name": "Sajeev Admin",
-        "admin_id": "admin_sajeev001"
-    }
-}
+# Admin credentials - loaded from environment variables
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '').lower()
+ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', '')
 
 async def get_current_admin(request: Request):
     """Verify admin authentication"""
