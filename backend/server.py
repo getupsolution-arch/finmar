@@ -791,7 +791,7 @@ async def change_subscription(change_data: SubscriptionChange, current_user: Use
     success_url = f"{change_data.origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{change_data.origin_url}/dashboard"
     
-    webhook_url = f"{os.environ['REACT_APP_BACKEND_URL']}/api/webhook/stripe"
+    webhook_url = f"{os.environ['BACKEND_URL']}/api/webhook/stripe"
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
     
     checkout_request = CheckoutSessionRequest(
