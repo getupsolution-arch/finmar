@@ -27,8 +27,9 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - **AI**: OpenAI GPT-5.2 via Emergent LLM Key
 - **Payments**: Stripe via emergentintegrations library
 - **Auth**: JWT (custom) + Google OAuth (Emergent Auth)
+- **Mobile**: Capacitor 6 (iOS & Android) with push notifications
 
-## What's Been Implemented (Feb 10, 2026)
+## What's Been Implemented (Feb 12, 2026)
 
 ### Backend API Endpoints - User Facing
 - ✅ `/api/auth/register` - User registration with JWT
@@ -44,10 +45,12 @@ FINMAR is a modern Australian business combining Accounting Services, Digital Ma
 - ✅ `/api/payments/checkout` - Create Stripe checkout
 - ✅ `/api/payments/status/{session_id}` - Check payment status
 - ✅ `/api/profile` - Get/update user profile
-- ✅ `/api/profile/business` - Update business details (NEW - Feb 10, 2026)
+- ✅ `/api/profile/business` - Update business details
 - ✅ `/api/profile/change-password` - Change user password
 - ✅ `/api/ai/insights` - AI business insights (GPT-5.2)
 - ✅ `/api/contact` - Contact form submission
+- ✅ `/api/notifications/register` - Register push notification token (NEW - Feb 12, 2026)
+- ✅ `/api/notifications/unregister` - Unregister push token (NEW - Feb 12, 2026)
 
 ### Backend API Endpoints - Admin Portal
 - ✅ `/api/admin/login` - Admin authentication
