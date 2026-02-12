@@ -93,11 +93,14 @@ function AppRouter() {
 function App() {
     return (
         <BrowserRouter>
-            <AuthProvider>
-                <AdminAuthProvider>
-                    <AppRouter />
-                </AdminAuthProvider>
-            </AuthProvider>
+            <MobileProvider>
+                <AuthProvider>
+                    <AdminAuthProvider>
+                        <OfflineIndicator />
+                        <AppRouter />
+                    </AdminAuthProvider>
+                </AuthProvider>
+            </MobileProvider>
         </BrowserRouter>
     );
 }
